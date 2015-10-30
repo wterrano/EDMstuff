@@ -1,0 +1,44 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.                % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{hyperref}
+%\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{.75in}
+
+%\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\begin{document}
+
+\tableofcontents
+\newpage
+\section{First look (Oct 25, 2015) at SQUID data taken on Oct 5, 2015 while powering on the lab}
+Some useful channels:
+\begin{itemize}
+\item Squid channel {\bf y1} was connected to a large, {\bf z} oriented pick-up coil.  Thus it measured the same magnetic field direction as {\bf z1} and {\bf z2} but with different sensitivity.
+\item Squid channel {\bf x2} was not in FLL mode, making it a test of other noise in the electronics chain.
+\item Tobias used Helmholtz coils to find a relative calibration of 5.552  between the pick-up coil and \textbf{z} channels. 
+\end{itemize}
+\subsection{Squid da1a with the rest of the electronics in the lab turned off}
+
+Data contained in file : \texttt{"2015-10-05 13-45-38.031713.dig"}.  Taken together they suggest that the 
+\begin{itemize}
+\item Pickup coil shows $\sim$ 5 times more spread in voltage vs. time as the normal squid coils, in agreement with Tobi's calibration.
+\item Disconnected channel shows $\sim$ 12 times less voltage spread.
+\end{itemize}
+
+Taken together (and shown in \ref{fig: All Off} this data set suggests that, with everything in the room turned off, the squid channels are seeing real magnetic field noise.
+
+%\begin{figure}[h]
+%\hfil\scalebox{.6}{\includegraphics*{All_Off_10_5_2015.pdf}}\hfil
+%\caption{Data taken with all non-squid electronics in the lab shut-off. Comparison of a typical squid channel {\bf z1} with the disconnected channel \textbf{x2} and the large pickup coil \textbf{y1}, with DC offsets removed.}
+%\label{fig: All 0ff}
+%\end{figure}
+
+\section{Squid data with everything in the lab turned on}
+
+
+\end{document}

@@ -1,0 +1,2 @@
+\contentsline {section}{\numberline {1}First look (Oct 25, 2015) at SQUID data taken on Oct 5, 2015 while powering on the lab}{2}{section.1}
+\contentsline {subsection}{\numberline {1.1}With the rest of the electronics in the lab turned off}{2}{subsection.1.1}
