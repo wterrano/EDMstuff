@@ -80,8 +80,13 @@ class HeXeData():
         for k,v in self.datadict.iteritems():
             self.datadict[k]=v*self.conversion_factors['Volts']
 
-
-    def low_pass(self,f):
+    def downsample(self,ds):
+        """
+        downsample the data in datadict by a factor of ds and store in sampleddict
+        :param ds: downsampling factor
+        :return:
+        """
+        pass
 
 ####
 #### Direct access to useful dictionary elements
