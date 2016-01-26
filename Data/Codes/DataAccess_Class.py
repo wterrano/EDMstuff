@@ -44,6 +44,10 @@ class DataAccess:
     # Convenience access handles
     ###
     @property
+    def sd(self):
+        return self.server_dict
+
+    @property
     def data_array(self):
         return self._data_dict[self.channel]
 
@@ -106,6 +110,7 @@ class DataAccess:
 
     # todo: reorganize into more OO concise style
     # todo: check validity of file locale
+    # todo: parse with matrix instead of dictionary and reassign at the end
     def _load_segment(self, doc_id=None):
         """
         File structure is:
@@ -122,7 +127,10 @@ class DataAccess:
         ll = lambda: open(self._file_address)
         # retrieve file from server
         if doc_id is not None:
-            po = pynedm.ProcessObject(uri=_server, username=_username, password=_password, adb=_db)
+            po = pynedm.ProcessObject(uri=self.sd['_server'],
+                                      username=self.sd['_username'],
+                                      password=self.sd['_password'],
+                                      adb='_db')
             ll = lambda: po.open_file(doc_id, self._file_name)
 
         with ll() as o:
