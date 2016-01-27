@@ -15,7 +15,7 @@ class DataAccess:
 
     """
 
-    def __init__(self, file_name=None, file_path=None, chn=None, frequency=200):
+    def __init__(self, file_name=None, file_path=None, chn=None, frequency=200, doc_id=None):
         """
 
         :param file_name: file to be accessed
@@ -24,10 +24,11 @@ class DataAccess:
         :return:
         """
 
+        self.doc_id = doc_id
         self.server_dict = dict(_db="nedm%2Fmeasurements",
                                 _server="http://10.155.59.88:5984",
                                 _server2="http://raid.nedm1",
-                                _password="pw",
+                                _password="clu$terXz",
                                 _username="nedm_user")
         self.READ_SIZE = 1024  # used to set the number of samples per file read
         self.cutoff_frequency = frequency
@@ -103,6 +104,16 @@ class DataAccess:
         """
         for getting .dig files and putting them in the class.
 
+        File structure is:
+               bytes 0..3: length of json header N (excluding header word)
+        bytes 4..4+N: json header (ASCII data)
+        bytes 4+N+1..EOF: binary data of channels
+        The binary data format depends on what's in the json header:
+        header["channel_list"] ---> ordered list of channels
+        header["byte_depth"]    ---> size of binary word
+        header["bit_shift"]    ---> amount to shift right
+        Every channel is listed one after another for each time point (fully
+        interlaced)
         :return:
         """
 
@@ -111,27 +122,18 @@ class DataAccess:
     # todo: reorganize into more OO concise style
     # todo: check validity of file locale
     # todo: parse with matrix instead of dictionary and reassign at the end
-    def _load_segment(self, doc_id=None):
+    def _load_segment(self):
         """
-        File structure is:
-           bytes 0..3: length of json header N (excluding header word)
-           bytes 4..4+N: json header (ASCII data)
-           bytes 4+N+1..EOF: binary data of channels
-        The binary data format depends on what's in the json header:
-          header["channel_list"] ---> ordered list of channels
-          header["byte_depth"]    ---> size of binary word
-          header["bit_shift"]    ---> amount to shift right
-        Every channel is listed one after another for each time point (fully
-        interlaced)
+
         """
         ll = lambda: open(self._file_address)
         # retrieve file from server
-        if doc_id is not None:
+        if self.doc_id is not None:
             po = pynedm.ProcessObject(uri=self.sd['_server'],
                                       username=self.sd['_username'],
                                       password=self.sd['_password'],
                                       adb='_db')
-            ll = lambda: po.open_file(doc_id, self._file_name)
+            ll = lambda: po.open_file(self.doc_id, self._file_name)
 
         with ll() as o:
             header_length = struct.unpack("<L", o.read(4))[0]
@@ -252,8 +254,11 @@ class DataAccess:
         pass
 
 
-WILL_MAC_DATAPATH = "/Users/William/Desktop/EDM/Data/DataRuns/"
-ALL_OFF_FILE = "2015-10-05 13-45-38.031713_downsample.dig"
-DEC_HE3_SPIN_FILE = "2015-12-17 09-21-07.377783_downsample.dig"
-# dac = DataAccess(ALL_OFF_FILE, WILL_MAC_DATAPATH, 0, 200)
-lsp = DataAccess(DEC_HE3_SPIN_FILE, WILL_MAC_DATAPATH, 0, 200)
+# WILL_MAC_DATAPATH = "/Users/William/Desktop/EDM/Data/DataRuns/"
+# ALL_OFF_FILE = "2015-10-05 13-45-38.031713_downsample.dig"
+# DEC_HE3_SPIN_FILE = "2015-12-17 09-21-07.377783_downsample.dig"
+# # dac = DataAccess(ALL_OFF_FILE, WILL_MAC_DATAPATH, 0, 200)
+# lsp = DataAccess(DEC_HE3_SPIN_FILE, WILL_MAC_DATAPATH, 0, 200)
+
+NET_TEST = dict(filename="2016-01-21 20-35-49.143245-0.dig",
+                doc_id="ef41ab4ea93aace72246cc77ff61c9f2")
