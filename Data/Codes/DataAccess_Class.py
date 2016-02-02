@@ -26,7 +26,8 @@ class DataAccess:
 
         self.doc_id = doc_id
         self.server_dict = dict(_db="nedm%2Fmeasurements",
-                                _server="http://10.155.59.88:5984",
+                                #_server="http://10.155.59.88:5984",
+                                _server = "http://10.155.59.15"
                                 _server2="http://raid.nedm1",
                                 _password="clu$terXz",
                                 _username="nedm_user")
@@ -38,12 +39,20 @@ class DataAccess:
         self._temp_dict = {}
         self._data_path = file_path
         self._file_name = file_name
-        self._file_address = self._data_path + self._file_name
         self.load_file()
 
     ###
     # Convenience access handles
     ###
+    @property
+    def _file_address(self):
+        try:
+            file_address = self._data_path + self._file_name
+        except TypeError:
+            print("Data path must be a string")
+            return
+        return file_address
+
     @property
     def sd(self):
         return self.server_dict
@@ -132,7 +141,7 @@ class DataAccess:
             po = pynedm.ProcessObject(uri=self.sd['_server'],
                                       username=self.sd['_username'],
                                       password=self.sd['_password'],
-                                      adb='_db')
+                                      adb=self.sd['_db'])
             ll = lambda: po.open_file(self.doc_id, self._file_name)
 
         with ll() as o:
@@ -262,3 +271,5 @@ class DataAccess:
 
 NET_TEST = dict(filename="2016-01-21 20-35-49.143245-0.dig",
                 doc_id="ef41ab4ea93aace72246cc77ff61c9f2")
+
+netload = DataAccess(NET_TEST['filename'], chn='0', doc_id=NET_TEST['doc_id'])
