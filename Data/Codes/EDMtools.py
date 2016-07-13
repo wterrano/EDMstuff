@@ -156,7 +156,7 @@ def interpret_file(file_name, doc_id=None):
 #       or
 #       python interpret_data.py /local/path/to/file/2015-09-16\ 16-27-13.392973.dig
 #     """
-#     doc_id = None
+#     _doc_id = None
 #     if len(sys.argv) > 2:
-#         doc_id = sys.argv[2]
-#     interpret_file(sys.argv[1], doc_id)
+#         _doc_id = sys.argv[2]
+#     interpret_file(sys.argv[1], _doc_id)

@@ -3,43 +3,119 @@ import numpy as np
 import pynedm
 import struct
 import scipy
+import os
+import sys
 
 __author__ = 'William'
 
+THIS_PATH=os.path.dirname(os.path.abspath(__file__))
 
 # todo: Unittests: Padding; Data_array Length; downsample value; correct values of lowpass filter
-
+print('hi')
 class DataAccess:
     """
     Class handling access to nedm DAQ data.
 
     """
 
-    def __init__(self, file_name=None, file_path=None, chn=None, frequency=200, doc_id=None):
+    def __init__(self, file_name=None, file_path=THIS_PATH, chn=None, cutoff_frequency=None, doc_id=None):
         """
 
         :param file_name: file to be accessed
         :param chn: Digitizer channel requested
-        :param frequency: low-pass filter cutoff [Hz]
+        :param cutoff_frequency: low-pass filter cutoff [Hz]
         :return:
         """
 
-        self.doc_id = doc_id
-        self.server_dict = dict(_db="nedm%2Fmeasurements",
-                                #_server="http://10.155.59.88:5984",
-                                _server = "http://10.155.59.15"
-                                _server2="http://raid.nedm1",
-                                _password="clu$terXz",
-                                _username="nedm_user")
-        self.READ_SIZE = 1024  # used to set the number of samples per file read
-        self.cutoff_frequency = frequency
-        self.channel = chn
-        self._file_header = {}
+        # if file_name is not None and _doc_id is not None:
+        #     raise ValueError('Only one file (file_name {}) or database id (_doc_id {}) can be specified.'
+        #                      .format(file_name, _doc_id))
+        if file_name is None and doc_id is None:
+            raise ValueError('file (file_name) or database id (_doc_id) must be specified')
+        self._doc_id = doc_id
+        self._server_dict = dict(_db="nedm%2Fmeasurements",
+                                 #_server="http://10.155.59.88:5984",
+                                _server = "http://10.155.59.15",
+                                 _server2="http://db.nedm1",
+                                 _password="clu$terXz",
+                                 _username="nedm_user")
+        self._cutoff_frequency = cutoff_frequency
+        self._chn = chn
         self._data_dict = {'header': {}, chn: np.array([])}
         self._temp_dict = {}
-        self._data_path = file_path
+        self._file_path = file_path
         self._file_name = file_name
+        self._dt = None
+        self._header_length = None
+        self._file_handle = self.get_file_handle()
+        self._file_header = self.get_file_header()
+        # self.compression_factor = self.set_compression_factor()
+        self.compression_factor = 1
+        self.reads_per_segment = 8192 * self.compression_factor  # set the number of samples per read of the file
         self.load_file()
+
+    def get_file_handle(self):
+        """
+        Open file object for reading
+
+        """
+        # open file from local disk
+        ll = lambda: open(self._file_address)
+        # retrieve file from server
+        if self._doc_id is not None:
+            po = pynedm.ProcessObject(uri=self.sd['_server2'],
+                                      username=self.sd['_username'],
+                                      password=self.sd['_password'],
+                                      adb=self.sd['_db'])
+            ll = lambda: po.open_file(self._doc_id, self._file_name)
+        return ll
+
+    def get_file_header(self):
+        """
+        Read file header and set needed values
+
+        :return:
+        """
+
+        with self._file_handle() as o:
+            header_length = struct.unpack("<L", o.read(4))[0]
+            o.seek(4)
+            hdr = json.loads(o.read(header_length))
+            self._file_header = hdr
+            try:
+                bit_depth = hdr["bit_depth"]
+            except KeyError:
+                bit_depth = hdr["byte_depth"]
+            self._bit_shift = hdr["bit_shift"]
+            if bit_depth == 2:
+                dt = np.int16
+            elif bit_depth == 4:
+                dt = np.int32
+            elif bit_depth == 8:
+                dt = np.float64
+            else:
+                raise Exception("unknown bit_depth")
+            self.load_header_info(dt, header_length)
+
+    def set_compression_factor(self):
+        """
+        find downsampling factor needed for the requested cutoff frequency
+
+        :return: integer compression factor.
+        """
+        if self._cutoff_frequency is None:
+            return 1
+        try:
+            cf = int(np.floor(self.file_frequency / self._cutoff_frequency))
+        except TypeError:
+            print("Invalid type for cutoff_frequency")
+            raise
+        else:
+            if cf > 0:
+                return cf
+            else:
+                raise ValueError("cutoff_frequency is out of range, should be between 0 and {}, or None".
+                                 format(self.file_frequency))
 
     ###
     # Convenience access handles
@@ -47,55 +123,54 @@ class DataAccess:
     @property
     def _file_address(self):
         try:
-            file_address = self._data_path + self._file_name
+            file_address = os.path.join(self._file_path, self._file_name)
         except TypeError:
-            print("Data path must be a string")
+            print("File path invalid format")
             return
         return file_address
 
     @property
+    def channel(self):
+        if self._chn in self._file_header["channel_list"]:
+            return self._chn
+        else:
+            raise TypeError("Invalid channel: {}  " \
+                   "Channels available for" \
+                   " this file are {}"
+                            .format(self._chn, str(self._file_header["channel_names"])))
+
+
+    @property
     def sd(self):
-        return self.server_dict
+        return self._server_dict
 
     @property
     def data_array(self):
         return self._data_dict[self.channel]
 
-    @data_array.setter
-    def data_array(self, new_data_array):
-        self._data_dict[self.channel] = new_data_array
+    # @data_array.setter
+    # def data_array(self, new_data_array):
+    #     self._data_dict[self.channel] = new_data_array
 
     @property
-    def header(self):
+    def output_header(self):
         return self._data_dict['header']
-
-    @header.setter
-    def header(self, value):
-        self._data_dict['header'] = value
-
-    @property
-    def factor(self):
-        return int(np.floor(self.file_frequency / self.cutoff_frequency))
-
-    @property
-    def reads_per_segment(self):
-        return self.factor * self.READ_SIZE
 
     @property
     def downsampling(self):
-        return self.header['downsample']
+        return self.output_header['downsample']
 
     @downsampling.setter
     def downsampling(self, value):
-        self.header['downsample'] = value
+        self.output_header['downsample'] = value
 
     @property
     def sample_frequency(self):
-        return self.header['sample_frequency[Hz]']
+        return self.output_header['sample_frequency[Hz]']
 
-    @sample_frequency.setter
-    def sample_frequency(self, value):
-        self.header['sample_frequency[Hz]'] = value
+    # @sample_frequency.setter
+    # def sample_frequency(self, value):
+    #     self.header['sample_frequency[Hz]'] = value
 
     @property
     def file_downsampling(self):
@@ -110,6 +185,7 @@ class DataAccess:
     ###
 
     def load_file(self):
+
         """
         for getting .dig files and putting them in the class.
 
@@ -131,40 +207,13 @@ class DataAccess:
     # todo: reorganize into more OO concise style
     # todo: check validity of file locale
     # todo: parse with matrix instead of dictionary and reassign at the end
+    # @profile
     def _load_segment(self):
         """
 
         """
-        ll = lambda: open(self._file_address)
-        # retrieve file from server
-        if self.doc_id is not None:
-            po = pynedm.ProcessObject(uri=self.sd['_server'],
-                                      username=self.sd['_username'],
-                                      password=self.sd['_password'],
-                                      adb=self.sd['_db'])
-            ll = lambda: po.open_file(self.doc_id, self._file_name)
 
-        with ll() as o:
-            header_length = struct.unpack("<L", o.read(4))[0]
-            o.seek(4)
-            hdr = json.loads(o.read(header_length))
-            self._file_header = hdr
-            try:
-                bit_depth = hdr["bit_depth"]
-            except KeyError:
-                bit_depth = hdr["byte_depth"]
-            bit_shift = hdr["bit_shift"]
-            dt = None
-            if bit_depth == 2:
-                dt = np.int16
-            elif bit_depth == 4:
-                dt = np.int32
-            elif bit_depth == 8:
-                dt = np.float64
-            else:
-                raise Exception("unknown bit_depth")
-
-            self.initialize_header()
+        with self._file_handle() as o:
 
             def channel_dict(dat):
                 """
@@ -182,16 +231,15 @@ class DataAccess:
                 # Now create a dictionary of the channels
                 return dict([(cl[i], x[i::total_ch]) for i in range(len(cl))])
 
-            # Reads from position 4 + header_length
-            data_start = 4 + header_length
+            # Reads from position 4 + self._header_length
+            data_start = 4 + self._header_length
             o.seek(data_start)
 
             # We should always read by a factor of this chunk_size
-            chunk_size = bit_depth * len(hdr["channel_list"])
+            chunk_size =  bit_depth * len(hdr["channel_list"])
 
             # o.seek(0, os.SEEK_END)
             # data_end = o.tell()
-            o.seek(data_start)
 
             def file_iterator():
                 """
@@ -204,22 +252,25 @@ class DataAccess:
                     if not data_segment:
                         break
                     yield data_segment
-
             i = 0
             for segment in file_iterator():
-                print("read #{}".format(i))
+                print('in iterator {}'.format(i))
                 self._temp_dict = channel_dict(np.fromstring(segment, dtype=dt))
                 self.process_incoming_data()
-                i += 1
+                i+=1
+                if i == 5: break
 
-    def initialize_header(self):
+    def load_header_info(self, dt, header_length):
         """
         set up internal header with needed parameters from file header
         """
         self.downsampling = self._file_header['downsample']
         self.sample_frequency = self._file_header['freq_hz']
+        self._dt = dt
+        self._header_length = header_length
         return
 
+    # @profile
     def process_incoming_data(self):
         """
         Extract relevant channel, downsample and add it to data array
@@ -230,6 +281,7 @@ class DataAccess:
         self.data_array = np.concatenate((self.data_array, filtered_data))
         return
 
+    # @profile
     def low_pass_filter(self, input_data):
         """
         Apply a crude down-sample the incoming data in order to give it
@@ -238,14 +290,14 @@ class DataAccess:
         :param input_data: input_data array to be low-pass filtered
         :return:
         """
-        self.downsampling = self.file_downsampling * self.factor
-        self.sample_frequency = self.file_frequency / self.factor
+        self.downsampling = self.file_downsampling * self.compression_factor
+        self.sample_frequency = self.file_frequency / self.compression_factor
         number_of_samples = input_data.size
-        padding = self.factor - (number_of_samples % self.factor)
-        if padding == self.factor:
+        padding = self.compression_factor - (number_of_samples % self.compression_factor)
+        if padding == self.compression_factor:
             padding = 0
         padded_data = np.append(input_data, np.zeros(padding) * np.NaN)
-        data_reshape = padded_data.reshape(-1, self.factor)
+        data_reshape = padded_data.reshape(-1, self.compression_factor)
         sampled_data = scipy.nanmean(data_reshape, 1)
         return sampled_data
 
@@ -269,7 +321,19 @@ class DataAccess:
 # # dac = DataAccess(ALL_OFF_FILE, WILL_MAC_DATAPATH, 0, 200)
 # lsp = DataAccess(DEC_HE3_SPIN_FILE, WILL_MAC_DATAPATH, 0, 200)
 
-NET_TEST = dict(filename="2016-01-21 20-35-49.143245-0.dig",
-                doc_id="ef41ab4ea93aace72246cc77ff61c9f2")
 
-netload = DataAccess(NET_TEST['filename'], chn='0', doc_id=NET_TEST['doc_id'])
+# todo :  unittesting -- 1. reads known file correctly
+# todo :  unittesting -- 2. test access handles
+# todo :  unittesting -- 3. test processing data
+# todo :  unittesting -- 4. test low pass filter; Padding;
+# todo :  unittesting -- 5. test interfacing with controller
+
+
+NET_TEST = dict(filename="2016-06-05 00-14-18.694128-0.dig",
+                doc_id="2e32e3448b57ee446ce8edb9a3449e0e")
+
+# netload = DataAccess(NET_TEST['filename'], chn=0, doc_id=NET_TEST['_doc_id'])
+# print(netload.data_array[:3])
+
+TEST_DATA = DataAccess(file_name='test_data.dig', file_path=THIS_PATH+'/Test', chn=0)
+# print(TEST_DATA._raw_dict)
