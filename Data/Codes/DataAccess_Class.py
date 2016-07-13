@@ -46,9 +46,11 @@ class DataAccess:
         self._file_path = file_path
         self._file_name = file_name
         self._dt = None
+        self._bit_shift = None
+        self._bit_depth = None
         self._header_length = None
         self._file_handle = self.get_file_handle()
-        self._file_header = self.get_file_header()
+        self.get_file_header()
         # self.compression_factor = self.set_compression_factor()
         self.compression_factor = 1
         self.reads_per_segment = 8192 * self.compression_factor  # set the number of samples per read of the file
@@ -83,18 +85,19 @@ class DataAccess:
             hdr = json.loads(o.read(header_length))
             self._file_header = hdr
             try:
-                bit_depth = hdr["bit_depth"]
+                self._bit_depth = hdr["bit_depth"]
             except KeyError:
-                bit_depth = hdr["byte_depth"]
+                self._bit_depth = hdr["byte_depth"]
             self._bit_shift = hdr["bit_shift"]
-            if bit_depth == 2:
+            if self._bit_depth == 2:
                 dt = np.int16
-            elif bit_depth == 4:
+            elif self._bit_depth == 4:
                 dt = np.int32
-            elif bit_depth == 8:
+            elif self._bit_depth == 8:
                 dt = np.float64
             else:
                 raise Exception("unknown bit_depth")
+            print(self._bit_depth)
             self.load_header_info(dt, header_length)
 
     def set_compression_factor(self):
@@ -222,10 +225,10 @@ class DataAccess:
                 :rtype : Dictionary
                 """
                 x = dat
-                if bit_shift != 0:
-                    x = np.right_shift(dat, bit_shift)
+                if self._bit_shift != 0:
+                    x = np.right_shift(dat, self._bit_shift)
 
-                cl = hdr["channel_list"]
+                cl = self._file_header["channel_list"]
                 total_ch = len(cl)
 
                 # Now create a dictionary of the channels
@@ -236,7 +239,7 @@ class DataAccess:
             o.seek(data_start)
 
             # We should always read by a factor of this chunk_size
-            chunk_size =  bit_depth * len(hdr["channel_list"])
+            chunk_size = self._bit_depth * len(self._file_header["channel_list"])
 
             # o.seek(0, os.SEEK_END)
             # data_end = o.tell()
@@ -255,10 +258,10 @@ class DataAccess:
             i = 0
             for segment in file_iterator():
                 print('in iterator {}'.format(i))
-                self._temp_dict = channel_dict(np.fromstring(segment, dtype=dt))
+                self._temp_dict = channel_dict(np.fromstring(segment, dtype=self._dt))
                 self.process_incoming_data()
                 i+=1
-                if i == 5: break
+                if i == 20000: break
 
     def load_header_info(self, dt, header_length):
         """
@@ -332,8 +335,8 @@ class DataAccess:
 NET_TEST = dict(filename="2016-06-05 00-14-18.694128-0.dig",
                 doc_id="2e32e3448b57ee446ce8edb9a3449e0e")
 
-# netload = DataAccess(NET_TEST['filename'], chn=0, doc_id=NET_TEST['_doc_id'])
-# print(netload.data_array[:3])
+netload = DataAccess(NET_TEST['filename'], chn=0, doc_id=NET_TEST['doc_id'])
+print(netload.data_array[:3])
 
 TEST_DATA = DataAccess(file_name='test_data.dig', file_path=THIS_PATH+'/Test', chn=0)
 # print(TEST_DATA._raw_dict)
