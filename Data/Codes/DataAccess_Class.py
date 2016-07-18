@@ -45,15 +45,15 @@ class DataAccess:
         self._temp_dict = {}
         self._file_path = file_path
         self._file_name = file_name
-        self._dt = None
-        self._bit_shift = None
-        self._bit_depth = None
         self._header_length = None
+        self._data_length = None
         self._file_handle = self.get_file_handle()
+        self._file_header = {}
+        self._data_matrix = None
         self.get_file_header()
-        # self.compression_factor = self.set_compression_factor()
+        self.compression_factor = self.set_compression_factor()
         self.compression_factor = 1
-        self.reads_per_segment = 8192 * self.compression_factor  # set the number of samples per read of the file
+        self.reads_per_segment = 2**20 * self.compression_factor  # set the number of samples per read of the file
         self.load_file()
 
     def get_file_handle(self):
@@ -84,21 +84,13 @@ class DataAccess:
             o.seek(4)
             hdr = json.loads(o.read(header_length))
             self._file_header = hdr
-            try:
-                self._bit_depth = hdr["bit_depth"]
-            except KeyError:
-                self._bit_depth = hdr["byte_depth"]
-            self._bit_shift = hdr["bit_shift"]
-            if self._bit_depth == 2:
-                dt = np.int16
-            elif self._bit_depth == 4:
-                dt = np.int32
-            elif self._bit_depth == 8:
-                dt = np.float64
-            else:
-                raise Exception("unknown bit_depth")
-            print(self._bit_depth)
-            self.load_header_info(dt, header_length)
+            data_start = header_length + 4
+            print("start point {}".format(data_start))
+            o.seek(0, os.SEEK_END)
+            data_end = o.tell()
+            print("end point {}".format(data_end))
+            self._data_length = (data_end - data_start)/(self.total_ch*self.bit_depth)
+            self.load_header_info(header_length)
 
     def set_compression_factor(self):
         """
@@ -119,6 +111,86 @@ class DataAccess:
             else:
                 raise ValueError("cutoff_frequency is out of range, should be between 0 and {}, or None".
                                  format(self.file_frequency))
+
+    def load_file(self):
+
+            """
+            for getting .dig files and putting them in the class.
+
+            File structure is:
+                   bytes 0..3: length of json header N (excluding header word)
+            bytes 4..4+N: json header (ASCII data)
+            bytes 4+N+1..EOF: binary data of channels
+            The binary data format depends on what's in the json header:
+            header["channel_list"] ---> ordered list of channels
+            header["byte_depth"]    ---> size of binary word
+            header["bit_shift"]    ---> amount to shift right
+            Every channel is listed one after another for each time point (fully
+            interlaced)
+            :return:
+            """
+
+            self._data_dict = self._load_segment()
+
+        # todo: reorganize into more OO concise style
+        # todo: check validity of file locale
+        # todo: parse with matrix instead of dictionary and reassign at the end
+
+    # @profile
+    def _load_segment(self):
+        """
+
+        """
+
+        bit_shift = self._file_header["bit_shift"]
+        total_ch = self.total_ch
+        cl = self.channels
+
+        if self.bit_depth == 2:
+            dt = np.int16
+        elif self.bit_depth == 4:
+            dt = np.int32
+        elif self.bit_depth == 8:
+            dt = np.float64
+        else:
+            raise Exception("unknown bit_depth")
+
+        with self._file_handle() as o:
+
+            # Reads from position 4 + self._header_length
+            data_start = 4 + self._header_length
+
+            # We should always read by a factor of this chunk_size
+            chunk_size = self.bit_depth * total_ch
+
+            def file_iterator():
+                """
+                Make a generator of file data, broken into multiples of the chunk_length
+
+                :rtype : generator
+                """
+                while True:
+                    data_segment = o.read(self.reads_per_segment * chunk_size)
+                    if not data_segment:
+                        break
+                    yield data_segment
+            i = 0
+            o.seek(data_start)
+            for segment in file_iterator():
+                print('in iterator {}'.format(i))
+                # self._temp_dict = channel_dict(np.fromstring(segment, dtype=dt))
+                # self.process_incoming_data()
+                segment_decimal = np.fromstring(segment, dtype=dt)
+                if bit_shift != 0:
+                    segment_decimal = np.right_shift(segment_decimal, bit_shift)
+                segment_decimal.shape = (-1, total_ch)
+                segment_rotated = segment_decimal.swapaxes(0, 1)
+                if self._data_matrix is None:
+                    self._data_matrix = segment_rotated
+                else:
+                    self._data_matrix = np.concatenate((self._data_matrix, segment_rotated), -1)
+                i+=1
+                if i == 20000: break
 
     ###
     # Convenience access handles
@@ -149,7 +221,7 @@ class DataAccess:
 
     @property
     def data_array(self):
-        return self._data_dict[self.channel]
+        return self._data_matrix[self.channel]
 
     # @data_array.setter
     # def data_array(self, new_data_array):
@@ -183,93 +255,33 @@ class DataAccess:
     def file_frequency(self):
         return self._file_header['freq_hz'] / self.file_downsampling
 
+    @property
+    def channels(self):
+        return self._file_header['channel_list']
+
+    @property
+    def bit_depth(self):
+        try:
+            bd = self._file_header["bit_depth"]
+        except KeyError:
+            bd = self._file_header["byte_depth"]
+        return bd
+
+    @property
+    def total_ch(self):
+        return len(self.channels)
+
     ###
     # Interfacing with the data file
     ###
 
-    def load_file(self):
 
-        """
-        for getting .dig files and putting them in the class.
-
-        File structure is:
-               bytes 0..3: length of json header N (excluding header word)
-        bytes 4..4+N: json header (ASCII data)
-        bytes 4+N+1..EOF: binary data of channels
-        The binary data format depends on what's in the json header:
-        header["channel_list"] ---> ordered list of channels
-        header["byte_depth"]    ---> size of binary word
-        header["bit_shift"]    ---> amount to shift right
-        Every channel is listed one after another for each time point (fully
-        interlaced)
-        :return:
-        """
-
-        self._data_dict = self._load_segment()
-
-    # todo: reorganize into more OO concise style
-    # todo: check validity of file locale
-    # todo: parse with matrix instead of dictionary and reassign at the end
-    # @profile
-    def _load_segment(self):
-        """
-
-        """
-
-        with self._file_handle() as o:
-
-            def channel_dict(dat):
-                """
-                Helper function that makes dictionary from the data in memory
-
-                :rtype : Dictionary
-                """
-                x = dat
-                if self._bit_shift != 0:
-                    x = np.right_shift(dat, self._bit_shift)
-
-                cl = self._file_header["channel_list"]
-                total_ch = len(cl)
-
-                # Now create a dictionary of the channels
-                return dict([(cl[i], x[i::total_ch]) for i in range(len(cl))])
-
-            # Reads from position 4 + self._header_length
-            data_start = 4 + self._header_length
-            o.seek(data_start)
-
-            # We should always read by a factor of this chunk_size
-            chunk_size = self._bit_depth * len(self._file_header["channel_list"])
-
-            # o.seek(0, os.SEEK_END)
-            # data_end = o.tell()
-
-            def file_iterator():
-                """
-                Make a generator of file data, broken into multiples of the chunk_length
-
-                :rtype : generator
-                """
-                while True:
-                    data_segment = o.read(self.reads_per_segment * chunk_size)
-                    if not data_segment:
-                        break
-                    yield data_segment
-            i = 0
-            for segment in file_iterator():
-                print('in iterator {}'.format(i))
-                self._temp_dict = channel_dict(np.fromstring(segment, dtype=self._dt))
-                self.process_incoming_data()
-                i+=1
-                if i == 20000: break
-
-    def load_header_info(self, dt, header_length):
+    def load_header_info(self, header_length):
         """
         set up internal header with needed parameters from file header
         """
         self.downsampling = self._file_header['downsample']
         self.sample_frequency = self._file_header['freq_hz']
-        self._dt = dt
         self._header_length = header_length
         return
 
@@ -335,8 +347,19 @@ class DataAccess:
 NET_TEST = dict(filename="2016-06-05 00-14-18.694128-0.dig",
                 doc_id="2e32e3448b57ee446ce8edb9a3449e0e")
 
-netload = DataAccess(NET_TEST['filename'], chn=0, doc_id=NET_TEST['doc_id'])
-print(netload.data_array[:3])
+# netload = DataAccess(NET_TEST['filename'], chn=0, doc_id=NET_TEST['doc_id'])
+# print(netload.data_array[:3])
 
 TEST_DATA = DataAccess(file_name='test_data.dig', file_path=THIS_PATH+'/Test', chn=0)
 # print(TEST_DATA._raw_dict)
+#  def channel_dict(dat):
+#                 """
+#                 Helper function that makes dictionary from the data in memory
+#
+#                 :rtype : Dictionary
+#                 """
+#                 x = dat
+#                 if bit_shift != 0:
+#                     x = np.right_shift(dat, bit_shift)
+#                 # Now create a dictionary of the channels
+#                 return dict([(cl[i], x[i::total_ch]) for i in range(len(cl))])cl
