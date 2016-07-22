@@ -5,6 +5,13 @@ import struct
 import scipy
 import os
 import sys
+'''
+ URL to request downsampled data
+
+/_attachments/[db_name]/[doc_id]/[attachment].dig/downsample/50
+
+ http://db.nedm1/_attachments/nedm%2Fmeasurements/2e32e3448b57ee446ce8edb9a3449e0e/2016-06-05
+00-14-18.694128-0.dig/downsample/50 '''
 
 __author__ = 'William'
 
@@ -69,6 +76,7 @@ class DataAccess:
                                       username=self.sd['_username'],
                                       password=self.sd['_password'],
                                       adb=self.sd['_db'])
+            print(self._file_name)
             ll = lambda: po.open_file(self._doc_id, self._file_name)
         return ll
 
@@ -347,10 +355,10 @@ class DataAccess:
 NET_TEST = dict(filename="2016-06-05 00-14-18.694128-0.dig",
                 doc_id="2e32e3448b57ee446ce8edb9a3449e0e")
 
-# netload = DataAccess(NET_TEST['filename'], chn=0, doc_id=NET_TEST['doc_id'])
-# print(netload.data_array[:3])
+netload = DataAccess(NET_TEST['filename']+'/downsample/1', chn=0, doc_id=NET_TEST['doc_id'])
+print(netload.data_array[:3])
 
-TEST_DATA = DataAccess(file_name='test_data.dig', file_path=THIS_PATH+'/Test', chn=0)
+# TEST_DATA = DataAccess(file_name='test_data.dig', file_path=THIS_PATH+'/Test', chn=0)
 # print(TEST_DATA._raw_dict)
 #  def channel_dict(dat):
 #                 """
