@@ -2,8 +2,10 @@
   <dictionary name="William">
     <words>
       <w>aace</w>
+      <w>chns</w>
       <w>chunked</w>
       <w>chunking</w>
+      <w>cloudant</w>
       <w>datapath</w>
       <w>downsample</w>
       <w>downsampling</w>
@@ -11,6 +13,7 @@
       <w>fmeasurements</w>
       <w>lowpass</w>
       <w>nedm</w>
+      <w>testdownsampling</w>
     </words>
   </dictionary>
 </component>

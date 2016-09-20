@@ -150,17 +150,17 @@ def make_channels_list(hdr,data):
                 channel_names.append('lockin xe')
     return (channels, channel_names)
 
-def downsample_to_2n(data, sample_rate, location = 'end'):
+def downsample_to_2n(data, sample_rate, location = 'end_byte'):
     '''Downsamples a dataset to be of length that is equal of 2^n. Used for
-    Making fft quicker. if location == end then takes data off of end of
-    dataset. If location == start then takes data off of beginning of dataset'''
+    Making fft quicker. if location == end_byte then takes data off of end_byte of
+    dataset. If location == start_byte then takes data off of beginning of dataset'''
     closest_lower = 2
     while closest_lower < len(data):
         closest_lower *= 2
     closest_lower /= 2
-    if location == 'end':
+    if location == 'end_byte':
         return data[:closest_lower]
-    elif location == 'start':
+    elif location == 'start_read':
         return data[len(data) - closest_lower:]
 
 def find_he_xe_freqs(x_data, y_data):
@@ -174,7 +174,7 @@ def find_he_xe_freqs(x_data, y_data):
     freqs = np.fft.rfftfreq(x_n,rate) #creates axis of frequencies corresponding to fft peaks
     he = [i for i in freqs if 36 < i < 42] #regions to search for he
     he_loc = np.where(freqs == he[0])[0][0] #index of beginning of he region
-    he_loc_end = np.where(freqs == he[-1])[0][0] #index of end of he region
+    he_loc_end = np.where(freqs == he[-1])[0][0] #index of end_byte of he region
     xe = [i for i in freqs if 12 < i < 16] #same as he
     xe_loc = np.where(freqs == xe[0])[0][0]
     xe_loc_end = np.where(freqs == xe[-1])[0][0]
@@ -207,9 +207,9 @@ def find_he_xe_freqs(x_data, y_data):
                 #ylim(bounds(zgrad))
                 #show()
 
-                #start =  float(raw_input('Enter beginning of pulse in seconds: '))
-                #end = float(raw_input('Enter end of pulse in seconds: '))
+                #start_byte =  float(raw_input('Enter beginning of pulse in seconds: '))
+                #end_byte = float(raw_input('Enter end_byte of pulse in seconds: '))
 
                 #print '...'
-                #time_loc_start = min(range(len(time)), key=lambda i: abs(time[i]-start))
-                #time_loc_end = min(range(len(time)), key=lambda i: abs(time[i]-end))
+                #time_loc_start = min(range(len(time)), key=lambda i: abs(time[i]-start_byte))
+                #time_loc_end = min(range(len(time)), key=lambda i: abs(time[i]-end_byte))

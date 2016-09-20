@@ -9,7 +9,7 @@ logging.basicConfig(filename='/var/log/supervisor/wsgi.log',level=logging.DEBUG)
 
 _nginx_prefix = "protected"
 _save_dir = "/database_attachments"
- _file_mode = @FILEMODE@
+_file_mode = @FILEMODE@
 
 
 class LocalException(Exception):

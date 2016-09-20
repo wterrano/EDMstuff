@@ -14,6 +14,17 @@ import pynedm
 import scipy as sp
 import matplotlib.pyplot as plt
 
+def calibrator(x1,x2,y1,y2, fv):
+    t1 = sqrt(x1**2 + y1**2)
+    t2 = sqrt(x2**2 + y2**2)
+    adc = (t1 + t2)/2
+    adcv = adc*20/(2**24)  # squid output in volts
+    adcnt = adcv*0.95   # squid output nanotesla
+    adcmt = adcnt*10**(-3)
+    cal = fv/adcmt
+    return cal
+
+
 squidchannels = {'0':'x1','1':'y1','2':'z1','3':'x2','4':'y2','5':'z2'}
 
 def slice(data,start,stop=0):

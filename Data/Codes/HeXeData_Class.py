@@ -97,7 +97,7 @@ class HeXeData:
 
     def down_sample(self, factor):
         """
-        downsample the data in _data_dict by factor and store result in sampled dict
+        downsample the data in _internal_data_dict by factor and store result in sampled dict
         :param factor: down sampling factor
         :return:
         """
@@ -113,7 +113,7 @@ class HeXeData:
 
     def cutoff_frequency(self, frequency=200):
         """
-        downsample the data in _data_dict so that the sample frequency in _sampled_dict
+        downsample the data in _internal_data_dict so that the sample frequency in _sampled_dict
         is frequency
 
         :param frequency: sample frequency for the new _sampled_dict
