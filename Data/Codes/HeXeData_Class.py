@@ -81,7 +81,7 @@ class HeXeData:
         """
         for getting .dig files and putting them in the class.
 
-        This exists as a method for future options of downsampling or selecting only certain channels on import
+        This exists as a method for future options of file_downsampling or selecting only certain channels on import
 
         :return:
         """

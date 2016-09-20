@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 # todo : Improve MemoryError if matrix is too big: report which file caused problem; implement generator output
+# todo : decide on best manner of rounding start/end times to nearest read
 
 from DataAccess.DigHandle_Class import LocalHandle
 from DataAccess.DigHeader_Class import DigHeader
@@ -17,7 +18,9 @@ MAX_ARRAY_SIZE = 2 ** 62
 class DigAccess(object):
     """
     Class handling access to nedm DAQ .dig files.
+    a read is a single time point consisting of all channels written by the digitizer
 
+    method load_data_dict asks the reader to provide segments of data, but only when the data_dict method is called
     """
 
     def __init__(self, file_name, file_path=THIS_PATH, doc_id=None, user_settings=dict()):
@@ -26,6 +29,14 @@ class DigAccess(object):
         :param file_name: file to be accessed, doc_id on server or File_path on local disk
         :return:
         """
+        self.known_keys = [
+            "downsample",
+            "channels_to_read",
+            "start_read",
+            "end_read",
+            "start_time",
+            "end_time",
+            "max_frequency"]
         self.user_settings = user_settings
         self.source = self.set_source(doc_id)
         self.file_name = file_name
@@ -39,6 +50,7 @@ class DigAccess(object):
         self.read_settings = self.define_read_settings()
         self.read = DigRead(self._handle, self.header, self.read_settings)
         self._internal_data_dict = dict()
+        self.frequency = self.read.header.output_frequency
 
     def define_read_settings(self):
         """
@@ -59,19 +71,47 @@ class DigAccess(object):
         :return:
         """
         default_settings = self.default_settings
-        known_settings = default_settings.keys()
+        known_settings = self.known_keys
+        # make sure the dictionary passed in is reasonable
         try:
             user_keys = self.user_settings.keys()
         except AttributeError:
             raise DigReadSettingError('Requested settings must be as a dictionary')
-        settings_dict = dict(default_settings)
         if not set(user_keys) < set(known_settings):
-            raise DigReadSettingError('Available settings are {}'.format(known_settings))
+            unknown_keys = set(user_keys).difference(set(known_settings))
+            warning = 'Keys {} are not known.  Available settings are {}'.format(list(unknown_keys),known_settings)
+            print(warning)
+            raise DigReadSettingError(warning)
+
+        # use default settings but over-write them if the user explicitly states what they should be
+        settings_dict = dict(default_settings)
         for key in default_settings.keys():
             if key in user_keys:
-                    settings_dict[key] = self.user_settings[key]
-        return settings_dict
+                settings_dict[key] = self.user_settings[key]
 
+        # handle conversions between settings as declared conveniently by user and settings as usable by DigRead
+        if type(settings_dict['channels_to_read']) is int:
+            settings_dict['channels_to_read'] = [self.user_settings['channels_to_read']]
+
+        if 'start_time' in user_keys:
+            if 'start_read' in user_keys:
+                raise DigReadSettingError('Please only specify one of "start_time" or "start_read".')
+            start_time = self.user_settings['start_time']
+            settings_dict['start_read'] = self.convert_time_to_read(start_time)
+
+        if 'end_time' in user_keys:
+            if 'end_read' in user_keys:
+                raise DigReadSettingError('Please only specify one of "end_time" or "end_read".')
+            end_time = self.user_settings['end_time']
+            settings_dict['end_read'] = self.convert_time_to_read(end_time)
+
+        if 'max_frequency' in user_keys:
+            if 'downsample' in user_keys:
+                raise DigReadSettingError('Please only specify one of "max_frequency" or "down_sample"')
+            max_f = self.user_settings['max_frequency']
+            settings_dict['downsample'] = self.convert_max_frequency_to_downsample(max_f)
+
+        return settings_dict
 
     @property
     def data_dict(self):
@@ -84,6 +124,28 @@ class DigAccess(object):
             return 'server'
         if not doc_id:
             return 'local'
+
+    def convert_time_to_read(self, time):
+        """
+        Determines what read number corresponds to a certain amount of time from the beginning of the run
+
+        Rounds up, so the read returned will be the read directly following that time point
+        :param time: time since beginning of the run
+        :return: read
+        """
+        period_between_reads = 1/self.header.file_frequency  # period in seconds between digitizer samples
+        cycles_to_time = np.ceil(time/period_between_reads)
+        return int(cycles_to_time)
+
+    def convert_max_frequency_to_downsample(self, max_f):
+        """
+        Set downsample factor based on the maximum frequency of interest
+
+        :return:
+        """
+        file_frequency = self.header.file_frequency
+        downsample = int(np.floor(file_frequency/max_f))
+        return downsample
 
     def load_data_dict(self):
         """
@@ -103,10 +165,10 @@ class DigAccess(object):
             count += 1
 
     def allocate_data_dict(self):
-        number_of_reads = self.header.data_length_reads
-        total_ch = self.header.total_ch
+        number_of_reads = self.read.settings['end_read'] - self.read.settings['start_read']
+        # total_ch = self.header.total_ch
         downsample = self.read.downsample
-        array_size = number_of_reads / (total_ch * downsample)
+        array_size = number_of_reads / downsample
         read_channels = self.read.channels_to_read
         try:
             self._internal_data_dict = dict([(chn, np.zeros(array_size)) for chn in read_channels])
@@ -120,8 +182,13 @@ class DigAccess(object):
     ### Data Controller functions
     #############
     def channel(self, chn):
-        if chn in self.read.channels_to_read:
-            return self.data_dict[chn]
+        try:
+            if chn in self.read.channels_to_read:
+                return self.data_dict[chn]
+        except TypeError:
+            raise DigReadSettingError('channels_to_read must be an iterable sequence.  A one element list suffices if '
+                                      'only one '
+                                      'channel is desired')
         else:
             raise KeyError("Invalid channel: {} has not been read "
                             "Channel numbers available for"
@@ -129,10 +196,6 @@ class DigAccess(object):
                             .format(chn, self.header.channel_list, str(self.header.channel_names)))
 
 
-# todo :  unittesting -- 1. reads known file correctly
-# todo :  unittesting -- 2. test access handles
-# todo :  unittesting -- 3. test processing data
-# todo :  unittesting -- 4. test low pass filter; Padding;
 # todo :  unittesting -- 5. test interfacing with controller
 
 
@@ -142,4 +205,3 @@ NET_TEST = dict(filename="2016-06-05 00-14-18.694128-0.dig",
 testfile = DigAccess('test_data.dig', './Test')
 
 # netload = DataAccess(NET_TEST['filename']+'/downsample/1', chn=0, doc_id=NET_TEST['doc_id'])
-# print(netload.data_array[:3])

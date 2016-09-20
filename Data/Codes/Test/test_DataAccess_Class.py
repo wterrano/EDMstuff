@@ -1,10 +1,4 @@
-# todo : only test network reading optionally
-# todo :  unittesting -- 1. reads known file correctly;  also check some bad file calls (names, channels etc.)
-# todo :  unittesting -- 2. test access handles
-# todo :  unittesting -- 3. test processing data
-# todo :  unittesting -- 4. test low pass filter; Padding;
 # todo :  unittesting -- 5. test interfacing with controller
-# todo: Unittests: Padding; Data_array Length; downsample value; correct values of lowpass filter
 import numpy as np
 import pytest
 import DataAccess_Class as Da_C
@@ -195,6 +189,7 @@ class TestData(object):
     # highest value position flips to being largest negative number at 8 and then counts up from there to -1 ...
     # for 32 bit encoding: '\x00\x00\x00\x80 is largest negative number (-8*16^7) and '\xff\xff\xff\xff' is -1
     # '\xff\xff\xff\x7f' is largest possible positive number (8*16^7 - 1)
+
     file_start_raw_chn0 = ['\xfc\xfe\xfe\xff', '\x20\xfe\xfe\xff', '\xdb\x01\xff\xff']
     file_end_raw_chn9 = ['\xd1\xf7\xff\xff', '\xdb\xf7\xff\xff']
     file_start_decimal_chn0 = np.array([-65796, -66016, -65061])
@@ -221,6 +216,17 @@ class TestData(object):
         channel9 = test_file.channel(9)
         print(len(channel9), len(self.file_end_decimal_chn9))
         assert channel9[-2:].all() == self.file_end_decimal_chn9.all()
+
+    def test_segment_read_and_channel_read_data_values(self, dig_file=FILE_LOCAL_TEST):
+        """
+        Look at channel values converted from hex binary to integers starting at read 1 instead beginning of
+        the file
+        For this use channel 0
+        """
+
+        settings = {'channels_to_read': [0], 'start_read': 1, 'end_read': 3}
+        test_load = Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+        assert test_load.channel(0).all() == self.file_start_decimal_chn0[1:3].all()
 
     def test_only_read_some_channels(self, dig_file=FILE_LOCAL_TEST):
         """
@@ -249,6 +255,71 @@ class TestData(object):
         test_load = Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
         with pytest.raises(KeyError):
             test_load.channel(0)
+
+    def test_downsample_data_start_read(self, dig_file = FILE_LOCAL_TEST):
+        """
+        downsample data by 2 and check average of reads 1&2 in channel 0
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'downsample': 2, 'channels_to_read': [0], 'start_read': 1}
+        test_load = Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+        assert test_load.channel(0)[0] == np.mean(self.file_start_decimal_chn0[1:3])
+
+    def test_downsample_data_end(self, dig_file = FILE_LOCAL_TEST):
+        """
+        downsample data by 2 and check last point in channel 9
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'downsample': 2, 'channels_to_read': 9}
+        test_load = Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+        assert test_load.channel(9)[-1] == np.mean(self.file_end_decimal_chn9)
+
+class TestUserSettings(object):
+    """
+    tests the functionality of time slicing and frequency cutoff
+    """
+
+    def test_slice_time(self, dig_file=FILE_LOCAL_TEST):
+        """
+        Give time slice to retrieve from test data
+
+        :return:
+        """
+
+        full_settings = {"channels_to_read": [0]}
+        full_access = Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=full_settings)
+        full_channel = full_access.channel(0)
+        start_time = 1
+        end_time = 10
+        section_settings = {"channels_to_read": [0], "start_time": start_time, "end_time": end_time}
+        section_access = Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=section_settings)
+        section_channel = section_access.channel(0)
+        freq = full_access.frequency
+        start = np.ceil(start_time*freq)
+        end = np.ceil(end_time*freq)
+        assert section_channel.all() == full_channel[start:end].all()
+
+    def test_max_frequency(self, dig_test=FILE_LOCAL_TEST):
+        """
+        make sure that max-frequency function works
+
+        :param dig_test:
+        :return:
+        """
+
+        max_freq = 100.3
+        max_freq_setting = {"channels_to_read": 0, "max_frequency": max_freq}
+        max_freq_access = Da_C.DigAccess(file_name=dig_test, file_path=THIS_PATH, user_settings=max_freq_setting)
+        max_freq_channel = max_freq_access.channel(0)
+        file_frequency = 558.03571428
+        downsample_setting = {"channels_to_read": 0, "downsample": int(np.floor(file_frequency/max_freq))}
+        downsample_access = Da_C.DigAccess(file_name=dig_test, file_path=THIS_PATH, user_settings=downsample_setting)
+        downsample_channel = downsample_access.channel(0)
+        assert downsample_channel.all() == max_freq_channel.all()
 
 # noinspection PyClassHasNoInit
 class TestDownSampleFromServer(object):

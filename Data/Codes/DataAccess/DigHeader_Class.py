@@ -24,8 +24,10 @@ class DigHeader(object):
             hdr = json.loads(o.read(self.header_length))
             self._file_header = hdr
             self.total_ch = len(hdr['channel_list'])
-            self.downsampling = self._file_header['downsample']
-            self.sample_frequency = self._file_header['freq_hz']
+            self.file_downsampling = self._file_header['downsample']  # if the file has already been downsampled
+            self.sample_frequency = self._file_header['freq_hz'] # digitization frequency
+            self.file_frequency = self.sample_frequency/self.file_downsampling
+            self.output_frequency = None
             self.bit_shift = self._file_header['bit_shift']
             self.bit_depth = self.get_bit_depth()
             self.data_type = self.get_data_type()
@@ -35,7 +37,7 @@ class DigHeader(object):
                 raise HeaderFormatError('Header is not a dictionary unexpected header format or length')
             self.file_length = self._handle.length
             self.data_length_bytes = self.file_length - self.header_length - self.hl_bytes
-            self.data_length_reads = self.data_length_bytes/self.bit_depth
+            self.data_length_reads = self.data_length_bytes/(self.bit_depth * self.total_ch)
 
     def __getattr__(self, item):
         return self._file_header[item]

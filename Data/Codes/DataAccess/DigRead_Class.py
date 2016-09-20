@@ -6,14 +6,14 @@ class DigReadSettingError(TypeError):
     def __init__(self, msg=None):
         self.msg = "Invalid Setting for digitizer file read"
         if msg is not None:
-            self.msg
+            self.msg = msg
 
 
 class DigReadChannelError(DigReadSettingError):
     def __init__(self, channel, filename, msg=None):
         self.msg = "Channel {} does not exist in the file {}".format(channel, filename)
         if msg is not None:
-            self.msg
+            self.msg = msg
 
 
 class DigRead(object):
@@ -40,7 +40,7 @@ class DigRead(object):
             self.header = header
         elif not header:
             self.header = DigHeader(self._handle)
-        self.setting_keys = [
+        self.known_keys = [
             "downsample",
             "channels_to_read",
             "start_read",
@@ -51,7 +51,15 @@ class DigRead(object):
         downsample = self.settings['downsample']
         self.data_type = self.header.data_type
         self.total_ch = self.header.total_ch
-        self.min_chunk = self.total_ch * bit_depth * downsample
+        self.bytes_per_read = self.total_ch * bit_depth
+        self.min_chunk = self.bytes_per_read * downsample
+    #
+    # @property
+    # def channels_to_read(self):
+    #     if self.settings['i']
+
+    def __getattr__(self, item):
+        return self.settings[item]
 
     def check_settings(self, requested_settings):
         """
@@ -67,15 +75,16 @@ class DigRead(object):
             raise DigReadSettingError('Invalid settings format, must be a dictionary with keys: {}'.format(
                 default_settings.keys()))
         # load requested settings and check that they are valid
-        if not set(user_keys) <= set(self.setting_keys):
-            unknown_keys = set(user_keys).difference(self.setting_keys)
+        if not set(user_keys) <= set(self.known_keys):
+            unknown_keys = set(user_keys).difference(self.known_keys)
             print(unknown_keys)
             raise DigReadSettingError('Requested settings "{}" not recognized.  Possible settings are: {}'.format(
-                 unknown_keys, self.setting_keys))
+                 unknown_keys, self.known_keys))
 
         ds = requested_settings['downsample']
         self.check_downsample_value(ds)
         settings_dict['downsample'] = ds
+        self.set_output_frequency(ds)
 
         chns = requested_settings['channels_to_read']
         self.check_channels(chns)
@@ -88,6 +97,12 @@ class DigRead(object):
         settings_dict['end_read'] = requested_settings['end_read']
 
         return settings_dict
+
+    def set_output_frequency(self, downsample):
+        """ give the frequency of the data points in the output array """
+
+        ff = self.header.file_frequency
+        self.header.output_frequency = ff/downsample
 
     def check_downsample_value(self, value):
         if type(value) is not int:
@@ -131,9 +146,6 @@ class DigRead(object):
         if start > end:
                 raise DigReadSettingError("Requested start point must be before requested end point")
 
-    def __getattr__(self, item):
-        return self.settings[item]
-
     def data_segments(self):
         """
         for getting .dig files and putting them in the class.
@@ -155,9 +167,10 @@ class DigRead(object):
 
         with self._handle.file_object() as o:
 
-            # Reads from position hl_bytes + header_length
-            data_start = self.header.data_start
-            o.seek(data_start)
+            # Reads from position hl_bytes + header_length + start_read*bytes_per_read
+            read_data_start = self.header.data_start + self.settings['start_read']*self.bytes_per_read
+            read_data_end = self.header.data_start + self.settings['end_read']*self.bytes_per_read
+            o.seek(read_data_start)
             chunk_size = self.min_chunk * self.reads_per_segment
             segment_dict = dict()
 
@@ -167,8 +180,17 @@ class DigRead(object):
 
                 :rtype : generator
                 """
+
+                at_end = False
                 while True:
-                    data_segment = o.read(chunk_size)
+                    if at_end:
+                        break
+                    if o.tell()+chunk_size > read_data_end:
+                        new_chunk_size = read_data_end-o.tell()
+                        data_segment = o.read(new_chunk_size)
+                        at_end = True
+                    else:
+                        data_segment = o.read(chunk_size)
                     if not data_segment:
                         break
                     yield data_segment

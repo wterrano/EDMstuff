@@ -3,6 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="7e732c81-3695-4a4d-bbae-9bbe088a57fb" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Data/Codes/DataAccess/DigHeader_Class.py" afterPath="$PROJECT_DIR$/Data/Codes/DataAccess/DigHeader_Class.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Data/Codes/DataAccess/DigRead_Class.py" afterPath="$PROJECT_DIR$/Data/Codes/DataAccess/DigRead_Class.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Data/Codes/DataAccess_Class.py" afterPath="$PROJECT_DIR$/Data/Codes/DataAccess_Class.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Data/Codes/HeXeData_Class.py" afterPath="$PROJECT_DIR$/Data/Codes/HeXeData_Class.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Data/Codes/Test/test_DataAccess_Class.py" afterPath="$PROJECT_DIR$/Data/Codes/Test/test_DataAccess_Class.py" />
     </list>
     <ignored path="EDM.iws" />
@@ -39,10 +43,23 @@
           <file leaf-file-name="DigRead_Class.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess/DigRead_Class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="480">
-                  <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="70" selection-end-column="0" />
+                <state relative-caret-position="166">
+                  <caret line="46" column="22" selection-start-line="46" selection-start-column="22" selection-end-line="46" selection-end-column="22" />
                   <folding>
                     <element signature="e#0#37#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="test_DataAccess_Class.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Data/Codes/Test/test_DataAccess_Class.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="15">
+                  <caret line="225" column="0" selection-start-line="225" selection-start-column="0" selection-end-line="225" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#61#79#0" expanded="true" />
+                    <marker date="1474409333000" expanded="true" signature="0:61" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -108,12 +125,24 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="DataAccess_Class.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="DataAccess_Class.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess_Class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="525">
-                  <caret line="37" column="53" selection-start-line="37" selection-start-column="53" selection-end-line="37" selection-end-column="53" />
+                <state relative-caret-position="15">
+                  <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
                   <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="DigRead_Class.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess/DigRead_Class.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="105">
+                  <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#0#37#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -121,8 +150,8 @@
           <file leaf-file-name="DigHeader_Class.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess/DigHeader_Class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="174">
-                  <caret line="37" column="73" selection-start-line="37" selection-start-column="73" selection-end-line="37" selection-end-column="73" />
+                <state relative-caret-position="120">
+                  <caret line="28" column="18" selection-start-line="28" selection-start-column="18" selection-end-line="28" selection-end-column="18" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
                   </folding>
@@ -130,14 +159,24 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="test_DataAccess_Class.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="test_DataAccess_Class.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/Data/Codes/Test/test_DataAccess_Class.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="105">
-                  <caret line="174" column="0" selection-start-line="174" selection-start-column="0" selection-end-line="174" selection-end-column="0" />
+                <state relative-caret-position="15">
+                  <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
                   <folding>
-                    <element signature="e#472#490#0" expanded="true" />
+                    <element signature="e#61#79#0" expanded="true" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="ChunkedData_Class.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Data/Codes/ChunkedData_Class.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="645">
+                  <caret line="45" column="10" selection-start-line="45" selection-start-column="10" selection-end-line="45" selection-end-column="10" />
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -211,10 +250,10 @@
         <option value="$PROJECT_DIR$/Data/Codes/EDMtools.py" />
         <option value="$PROJECT_DIR$/Data/Codes/TryingDS.py" />
         <option value="$PROJECT_DIR$/Data/Codes/handle_get.py" />
-        <option value="$PROJECT_DIR$/Data/Codes/DataAccess/DigHeader_Class.py" />
         <option value="$PROJECT_DIR$/Data/Codes/DataAccess/DigHandle_Class.py" />
-        <option value="$PROJECT_DIR$/Data/Codes/DataAccess_Class.py" />
+        <option value="$PROJECT_DIR$/Data/Codes/DataAccess/DigHeader_Class.py" />
         <option value="$PROJECT_DIR$/Data/Codes/DataAccess/DigRead_Class.py" />
+        <option value="$PROJECT_DIR$/Data/Codes/DataAccess_Class.py" />
         <option value="$PROJECT_DIR$/Data/Codes/Test/test_DataAccess_Class.py" />
       </list>
     </option>
@@ -630,10 +669,17 @@
       <option name="project" value="LOCAL" />
       <updated>1474370732005</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="start/end read settings now tested">
+      <created>1474373536987</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1474373536988</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
-  <component name="TodoView" selected-index="1">
+  <component name="TodoView">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -644,26 +690,26 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23431295" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32936507" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="TODO" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32936507" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20899472" sideWeight="0.50277996" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19179894" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20899472" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20899472" sideWeight="0.49722" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32804233" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32970452" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22486773" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22486773" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32970452" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24959612" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -680,7 +726,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test of server side downsample code" />
     <MESSAGE value="rearranged code in to separate classes" />
-    <option name="LAST_COMMIT_MESSAGE" value="rearranged code in to separate classes" />
+    <MESSAGE value="start/end read settings now tested" />
+    <option name="LAST_COMMIT_MESSAGE" value="start/end read settings now tested" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -689,14 +736,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///usr/local/lib/python2.7/site-packages/pynedm/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="8" selection-start-line="0" selection-start-column="8" selection-end-line="0" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/lib/python2.7/site-packages/pynedm/fileutils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="45">
@@ -737,7 +776,7 @@
         <state relative-caret-position="1695">
           <caret line="116" column="44" selection-start-line="116" selection-start-column="44" selection-end-line="116" selection-end-column="44" />
           <folding>
-            <element signature="e#472#490#0" expanded="true" />
+            <element signature="e#61#79#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -826,7 +865,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#472#490#0" expanded="true" />
+            <element signature="e#61#79#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1052,26 +1091,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess/DigHeader_Class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="174">
-          <caret line="37" column="73" selection-start-line="37" selection-start-column="73" selection-end-line="37" selection-end-column="73" />
+        <state relative-caret-position="120">
+          <caret line="28" column="18" selection-start-line="28" selection-start-column="18" selection-end-line="28" selection-end-column="18" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess_Class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="37" column="53" selection-start-line="37" selection-start-column="53" selection-end-line="37" selection-end-column="53" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess/DigRead_Class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="70" column="0" selection-start-line="70" selection-start-column="0" selection-end-line="70" selection-end-column="0" />
+        <state relative-caret-position="105">
+          <caret line="105" column="0" selection-start-line="105" selection-start-column="0" selection-end-line="105" selection-end-column="0" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
           </folding>
@@ -1080,11 +1111,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Data/Codes/Test/test_DataAccess_Class.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="174" column="0" selection-start-line="174" selection-start-column="0" selection-end-line="174" selection-end-column="0" />
+        <state relative-caret-position="15">
+          <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
           <folding>
-            <element signature="e#472#490#0" expanded="true" />
+            <element signature="e#61#79#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Data/Codes/ChunkedData_Class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="645">
+          <caret line="45" column="10" selection-start-line="45" selection-start-column="10" selection-end-line="45" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Data/Codes/DataAccess_Class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+          <folding />
         </state>
       </provider>
     </entry>
