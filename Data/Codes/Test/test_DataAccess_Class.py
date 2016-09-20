@@ -60,7 +60,7 @@ class TestInputParameters(object):
         :return:
         """
         settings = {'downsample': 2*np.pi}
-        with pytest.raises(TypeError):
+        with pytest.raises(DigReadSettingError):
             Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
 
     def test_invalid_channel_request_list(self, dig_file=FILE_LOCAL_TEST):
@@ -70,7 +70,7 @@ class TestInputParameters(object):
         :return:
         """
         settings = {'channels_to_read': [17,18] }
-        with pytest.raises(TypeError):
+        with pytest.raises(DigReadSettingError):
             Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
 
     def test_invalid_channel_request(self, dig_file=FILE_LOCAL_TEST):
@@ -80,7 +80,7 @@ class TestInputParameters(object):
         :return:
         """
         settings = {'channels_to_read': 2*np.pi}
-        with pytest.raises(TypeError):
+        with pytest.raises(DigReadSettingError):
             Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
 
     def test_invalid_setting_request(self, dig_file=FILE_LOCAL_TEST):
@@ -90,7 +90,7 @@ class TestInputParameters(object):
         :return:
         """
         settings = {'animal': 'horse'}
-        with pytest.raises(TypeError):
+        with pytest.raises(DigReadSettingError):
             Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
 
     def test_invalid_setting_format(self, dig_file=FILE_LOCAL_TEST):
@@ -100,17 +100,83 @@ class TestInputParameters(object):
         :return:
         """
         settings = {'filter?'}
-        with pytest.raises(TypeError):
+        with pytest.raises(DigReadSettingError):
             Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
 
-    def test_invalid_read_settings_start(self, dig_file=FILE_LOCAL_TEST):
+    def test_invalid_read_settings_start_1(self, dig_file=FILE_LOCAL_TEST):
         """
-        start must lie with in file
+        first read point start must lie with in file
 
         :param dig_file:
         :return:
         """
-        settings = {'start_read' : -7}
+        settings = {'start_read': -7}
+        with pytest.raises(DigReadSettingError):
+            Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+
+    def test_invalid_read_settings_start_2(self, dig_file=FILE_LOCAL_TEST):
+        """
+        start read must lie with in file
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'start_read': 10**20}
+        with pytest.raises(DigReadSettingError):
+            Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+
+    def test_invalid_read_settings_start_3(self, dig_file=FILE_LOCAL_TEST):
+        """
+        start read must be an integer
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'start_read': np.pi}
+        with pytest.raises(DigReadSettingError):
+            Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+
+    def test_invalid_read_settings_end_1(self, dig_file=FILE_LOCAL_TEST):
+        """
+        first read point end must lie with in file
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'end_read': -7}
+        with pytest.raises(DigReadSettingError):
+            Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+
+    def test_invalid_read_settings_end_2(self, dig_file=FILE_LOCAL_TEST):
+        """
+        end read must lie with in file
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'end_read': 10**20}
+        with pytest.raises(DigReadSettingError):
+            Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+
+    def test_invalid_read_settings_end_3(self, dig_file=FILE_LOCAL_TEST):
+        """
+        end read must be an integer
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'end_read': np.pi}
+        with pytest.raises(DigReadSettingError):
+            Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
+
+    def test_invalid_read_settings(self, dig_file=FILE_LOCAL_TEST):
+        """
+        end read must be after start read
+
+        :param dig_file:
+        :return:
+        """
+        settings = {'end_read': 17, 'start_read': 213}
         with pytest.raises(DigReadSettingError):
             Da_C.DigAccess(file_name=dig_file, file_path=THIS_PATH, user_settings=settings)
 
